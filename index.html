@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taiko Beats</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ===================== START / SONG SELECT ===================== -->
+  <section id="screen-menu" class="screen active">
+    <div class="menu-wrap">
+      <div class="title-block">
+        <div class="drum-logo" aria-hidden="true">
+          <span class="drum-face"></span>
+        </div>
+        <h1>TAIKO<span>BEATS</span></h1>
+        <p class="tagline">a three-drum rhythm game</p>
+      </div>
+
+      <div class="menu-cols">
+        <div class="panel">
+          <h2>Select Song</h2>
+          <ul id="song-list" class="song-list"></ul>
+          <h2 class="mt">Custom Maps</h2>
+          <ul id="custom-list" class="song-list"></ul>
+          <p id="no-custom" class="dim">No custom maps yet — make one in the editor.</p>
+        </div>
+
+        <div class="panel">
+          <h2>How to Play</h2>
+          <div class="controls-grid">
+            <div class="ctl ka"><span class="lane-dot"></span><div><b>Left Rim (Ka)</b><small>D &nbsp;or&nbsp; &larr;</small></div></div>
+            <div class="ctl don"><span class="lane-dot"></span><div><b>Drum Center (Don)</b><small>F &nbsp;or&nbsp; &darr;</small></div></div>
+            <div class="ctl ka"><span class="lane-dot"></span><div><b>Right Rim (Ka)</b><small>J &nbsp;or&nbsp; &rarr;</small></div></div>
+          </div>
+          <p class="dim small">Notes fall toward the drum. Strike the matching lane as the note crosses the hit line. Perfect &le;50ms &middot; Good &le;110ms.</p>
+          <button id="btn-editor" class="btn secondary wide">&#9998; Beatmap Editor</button>
+          <p class="dim small">Esc quits a song or test-play.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== GAME ===================== -->
+  <section id="screen-game" class="screen">
+    <canvas id="game-canvas" width="540" height="720"></canvas>
+  </section>
+
+  <!-- ===================== RESULTS ===================== -->
+  <section id="screen-results" class="screen">
+    <div class="results-card">
+      <h2 id="res-song">Song</h2>
+      <div class="grade-wrap"><span id="res-grade" class="grade">S</span></div>
+      <div class="stat-rows">
+        <div class="stat"><span>Score</span><b id="res-score">0</b></div>
+        <div class="stat"><span>Max Combo</span><b id="res-combo">0</b></div>
+        <div class="stat"><span>Accuracy</span><b id="res-acc">0%</b></div>
+        <div class="stat judges">
+          <span class="j-perfect">Perfect <b id="res-perfect">0</b></span>
+          <span class="j-good">Good <b id="res-good">0</b></span>
+          <span class="j-miss">Miss <b id="res-miss">0</b></span>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button id="btn-retry" class="btn">Retry</button>
+        <button id="btn-back" class="btn secondary">Menu</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== EDITOR ===================== -->
+  <section id="screen-editor" class="screen">
+    <div class="editor-wrap">
+      <header class="ed-toolbar">
+        <button id="ed-menu" class="btn small secondary">&larr; Menu</button>
+        <input id="ed-name" class="txt" type="text" placeholder="Map name" maxlength="48">
+        <label class="fld">BPM <input id="ed-bpm" class="txt num" type="number" min="40" max="300" step="1"></label>
+        <label class="fld">Offset ms <input id="ed-offset" class="txt num" type="number" step="5"></label>
+        <label class="fld">Snap
+          <select id="ed-snap" class="txt">
+            <option value="4">1/4</option>
+            <option value="8" selected>1/8</option>
+            <option value="12">1/12</option>
+            <option value="16">1/16</option>
+            <option value="24">1/24</option>
+            <option value="32">1/32</option>
+            <option value="1">Free</option>
+          </select>
+        </label>
+        <label class="fld">Zoom <input id="ed-zoom" type="range" min="0.04" max="0.6" step="0.01" value="0.14"></label>
+      </header>
+
+      <header class="ed-toolbar">
+        <button id="ed-play" class="btn small">&#9654; Play</button>
+        <button id="ed-test" class="btn small accent">Test-play &#9654;</button>
+        <span class="ed-time" id="ed-time">0:00.000</span>
+        <span class="sep"></span>
+        <button id="ed-undo" class="btn small secondary">&#8630; Undo</button>
+        <button id="ed-redo" class="btn small secondary">&#8631; Redo</button>
+        <span class="sep"></span>
+        <button id="ed-audio" class="btn small secondary">&#9835; Load audio&hellip;</button>
+        <input id="ed-audio-file" type="file" accept="audio/*" hidden>
+        <span id="ed-audio-name" class="dim small">synth track</span>
+        <span class="sep"></span>
+        <button id="ed-save" class="btn small secondary">Save</button>
+        <button id="ed-export" class="btn small secondary">Export JSON</button>
+        <button id="ed-import" class="btn small secondary">Import&hellip;</button>
+        <input id="ed-import-file" type="file" accept=".json,application/json" hidden>
+        <select id="ed-load" class="txt"><option value="">Load saved&hellip;</option></select>
+      </header>
+
+      <div class="ed-hint">
+        Click a lane to place a note (snaps to grid) &middot; Right-click / Delete removes &middot;
+        <b>1/2/3</b> or <b>D/F/J</b> place at cursor &middot; <b>Space</b> play &middot;
+        <b>Ctrl+Z / Ctrl+Shift+Z</b> undo/redo &middot; drag ruler to scrub &middot; wheel = scroll, Ctrl+wheel = zoom
+      </div>
+
+      <canvas id="editor-canvas" height="360"></canvas>
+      <div id="ed-status" class="ed-status"></div>
+    </div>
+  </section>
+
+</div>
+
+<script src="js/audio.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/game.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
